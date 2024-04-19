@@ -61,7 +61,7 @@ type Channel struct {
 // for listing channels.
 type ChannelMeta struct {
 	ID           string    `json:"id" doc:"Channel ID"`
-	Etag         string    `json:"etag" doc:"The content hash for the channel"`
+	ETag         string    `json:"etag" doc:"The content hash for the channel"`
 	LastModified time.Time `json:"last_modified" doc:"The last modified time for the channel"`
 	Channel      *Channel  `json:"-"`
 }
@@ -77,7 +77,7 @@ type ListChannelsResponse struct {
 }
 
 type GetChannelResponse struct {
-	Etag         string    `header:"Etag" doc:"The content hash for the channel"`
+	ETag         string    `header:"Etag" doc:"The content hash for the channel"`
 	LastModified time.Time `header:"Last-Modified" doc:"The last modified time for the channel"`
 	Body         *Channel
 }
@@ -133,7 +133,7 @@ func setup(api huma.API, db DB[*ChannelMeta]) {
 			return nil, huma.Error404NotFound("Channel not found")
 		}
 		return &GetChannelResponse{
-			Etag:         meta.Etag,
+			ETag:         meta.ETag,
 			LastModified: meta.LastModified,
 			Body:         meta.Channel,
 		}, nil
@@ -148,7 +148,7 @@ func setup(api huma.API, db DB[*ChannelMeta]) {
 		modified := time.Time{}
 		existing, ok := db.Load(input.ChannelID)
 		if ok {
-			etag = existing.Etag
+			etag = existing.ETag
 			modified = existing.LastModified
 		}
 		if input.HasConditionalParams() {
@@ -165,14 +165,14 @@ func setup(api huma.API, db DB[*ChannelMeta]) {
 
 		meta := &ChannelMeta{
 			ID:           input.ChannelID,
-			Etag:         Hash(input.Body),
+			ETag:         Hash(input.Body),
 			LastModified: time.Now(),
 			Channel:      input.Body,
 		}
 		db.Store(input.ChannelID, meta)
 
 		return &PutChannelResponse{
-			ETag: meta.Etag,
+			ETag: meta.ETag,
 		}, nil
 	})
 
